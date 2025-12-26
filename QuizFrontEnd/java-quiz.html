@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Quiz</title>
+    <link rel="stylesheet" href="java-quiz.css">
+</head>
+<body>
+
+<div class="quiz-box fade-in">
+    <h1 id="quiz-title">Quiz</h1>
+
+    <div class="quiz-info">
+        <span>Question <span id="current">1</span>/<span id="total">0</span></span>
+    </div>
+
+    <div id="question" class="question slide-in"></div>
+
+    <div id="options" class="options"></div>
+
+    <button id="nextBtn" onclick="nextQuestion()">Next</button>
+</div>
+
+<script src="java-quiz.js"></script>
+</body>
+</html>
