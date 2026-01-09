@@ -2,25 +2,79 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Quiz</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Master - Live Quiz</title>
     <link rel="stylesheet" href="java-quiz.css">
+    <style>
+        #quiz-container { display: none; }
+        #loading-screen {
+            text-align: center;
+            margin-top: 100px;
+            font-family: 'Segoe UI', sans-serif;
+            color: #333;
+        }
+    </style>
+
+    <script>
+        // ✅ STEP 1: VERIFY AUTHENTICATION & FETCH DATA
+        (async function verifyAccess() {
+            try {
+                const category = localStorage.getItem('currentQuiz') || 'java';
+                
+                const response = await fetch(`http://localhost:8080/api/questions/${category}`, {
+                    method: 'GET',
+                    credentials: 'include' // Sends JSESSIONID cookie
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    console.error("Unauthorized! Redirecting to login...");
+                    window.location.href = "http://localhost:8080/login";
+                } else if (response.ok) {
+                    const questions = await response.json();
+                    
+                    if (questions.length === 0) {
+                        alert("No questions found in database!");
+                        window.location.href = "index.html";
+                        return;
+                    }
+
+                    // Store data and swap screens
+                    localStorage.setItem('quizQuestions', JSON.stringify(questions));
+                    document.getElementById('loading-screen').style.display = 'none';
+                    document.getElementById('quiz-container').style.display = 'block';
+                    
+                    // ✅ STEP 2: SIGNAL THE JS TO START
+                    if (typeof startQuizInitialization === 'function') {
+                        startQuizInitialization();
+                    }
+                }
+            } catch (error) {
+                console.error("Connection Error:", error);
+                alert("Cannot connect to Backend Server. Please ensure Spring Boot is running.");
+                window.location.href = "index.html";
+            }
+        })();
+    </script>
 </head>
 <body>
 
-<div class="quiz-box fade-in">
-    <h1 id="quiz-title">Quiz</h1>
-
-    <div class="quiz-info">
-        <span>Question <span id="current">1</span>/<span id="total">0</span></span>
+    <div id="loading-screen">
+        <h2>Verifying Session...</h2>
+        <p>Please wait while we load your quiz questions.</p>
     </div>
 
-    <div id="question" class="question slide-in"></div>
+    <div id="quiz-container">
+        <div class="quiz-box fade-in">
+            <h1 id="quiz-title">Quiz</h1>
+            <div class="quiz-info">
+                <span>Question <span id="current">1</span> / <span id="total">0</span></span>
+            </div>
+            <div id="question" class="question">Loading...</div>
+            <div id="options" class="options"></div>
+            <button id="nextBtn" style="display:none;" onclick="nextQuestion()">Next</button>
+        </div>
+    </div>
 
-    <div id="options" class="options"></div>
-
-    <button id="nextBtn" onclick="nextQuestion()">Next</button>
-</div>
-
-<script src="java-quiz.js"></script>
+    <script src="java-quiz.js"></script>
 </body>
 </html>
